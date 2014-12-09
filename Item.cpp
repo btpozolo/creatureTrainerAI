@@ -116,6 +116,12 @@ string Item::useItem(string itemCommand, Party& party, Creature& enemy,
             case 0: { // Potion(po)
                       // Raise the health of the current Creature by POTION_HEALTH
                 int h = party.getActiveCreature().getHealthCurr();
+                if (h == 0) {
+                    ss << "Illegal Move: You cannot use a Potion on a fainted creature.\n";
+                    badMove = -1;
+                    useItem = false;
+                    break;
+                }
                 h += Item::POTION_HEALTH;
                 party.getActiveCreature().setHealthCurr(h);
                 ss << "You used a Potion to raise your active "
@@ -140,7 +146,7 @@ string Item::useItem(string itemCommand, Party& party, Creature& enemy,
                 
             case 3: { // Revive(re#)
                 if (itemCommand.length() < 3) {
-                    badMove = true;
+                    badMove = 1;
                     useItem = false;
                     break;
                 }
@@ -193,12 +199,12 @@ string Item::useItem(string itemCommand, Party& party, Creature& enemy,
                 // This is a valid swap, so make it so #1!
                 string oldName = party.creatures[cNum].getTypeName();
                 string newName = enemy.getTypeName();
-                enemy.setHealthCurr(Item::REVIVE_HEALTH);
+                enemy.setHealthCurr(Item::COLLAR_HEALTH);
                 party.creatures[cNum] = enemy;
                 
                 ss << "You used Collar to swap enemy " << newName
                 << " for your " << oldName << " in slot " << (cNum+1) << ".\n";
-                ss << "Your new " << newName << " has " << Item::REVIVE_HEALTH
+                ss << "Your new " << newName << " has " << Item::COLLAR_HEALTH
                 << " health.\n";
                 break;
             }
