@@ -22,14 +22,14 @@ const string Item::ITEM_NAMES[] = { "Potion", "DefBst", "AtkBst", "Revive",
 const string Item::ITEM_CODES[] = { "po", "db", "ab", "re", "co", "sa", "sb",
     "sc", "sd", "se", "sf", "sg", "sh" };
 
-const int Item::ITEM_CHANCE[] = { 10, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5 };
+const int Item::ITEM_CHANCE[] = { 10, 5, 5, 5, 0, 5, 5, 5, 5, 5, 5, 5, 5 };
 
 Item::Item(){
     for (int i= 0; i < NUM_ITEMS; ++i) {
         itemCounts[i] = STARTING_ITEM_COUNT;
     }
     // Special case for Collars
-    //itemCounts[4] = STARTING_COLLAR_COUNT;
+    itemCounts[4] = STARTING_COLLAR_COUNT;
 }
 
 
