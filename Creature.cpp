@@ -17,6 +17,7 @@ Creature Creature::factory(int cType, int level_in) {
     Creature c;
     c.setType( cType );
     c.setLevel(level_in);
+    c.xp = level_in*WINS_TO_LEVEL;
     return c;
 }
 
