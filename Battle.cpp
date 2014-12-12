@@ -29,7 +29,9 @@ void runBattle(Trainer &player1, Party &party, Item &items, stringstream& ss,
     if(maxLevel >= 9) {
         maxLevel = 9;
     }
-    maxLevel = 0;
+    if (!CreatureType::REACH_VERSION){
+        maxLevel = 0;
+    }
     enemy = Creature::factory( tNum, EECSRandom::range(0, maxLevel + 1) );
 
     //This simply introduces the enemy. The trainer can make the first move.
