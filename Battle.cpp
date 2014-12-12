@@ -6,7 +6,7 @@
 #include "EECSRandom.h"
 #include "Battle.h"
 #include "PrintHelper.h"
-#include "Party.h"
+#include "Party.h" 
 #include "Item.h"
 
 using namespace std;
@@ -20,16 +20,18 @@ using namespace std;
 void runBattle(Trainer &player1, Party &party, Item &items, stringstream& ss,
                int winCount, int& moveCount, int& illegalMoveCount){
     
-    // generate enemy
+
+    // WHAT SHOULD THE ENEMIES BE?? This generates an enemy
     int tNum = EECSRandom::range(0,CreatureType::NUM_TYPES);
-    
+
     Creature enemy;
     int maxLevel = winCount / 20;
     if(maxLevel >= 9) {
         maxLevel = 9;
     }
+    maxLevel = 0;
     enemy = Creature::factory( tNum, EECSRandom::range(0, maxLevel + 1) );
-    
+
     //This simply introduces the enemy. The trainer can make the first move.
     PrintHelper::printHR(ss);
     PrintHelper::printWinCount(winCount, ss);
@@ -64,7 +66,7 @@ void runBattle(Trainer &player1, Party &party, Item &items, stringstream& ss,
         moveCount++;
         
         parseMove(playerMove, party, items, enemy, ss, illegalMoveCount);
-        
+       
         // Everyone in the party who is not the active creature rest()s
         party.restInactive();
         
@@ -85,7 +87,14 @@ void runBattle(Trainer &player1, Party &party, Item &items, stringstream& ss,
         ss << "\nYou have defeated the Enemy ";
         ss << enemy.getTypeName(0) << "! Congratulations!\n";
         
+        //            ss << "Your party also gets to rest a turn and regains some health.\n\n";
+        //            party.getActiveCreature().rest();
+        //            party.restInactive();
+        
         string newItem = Item::randomItem();
+        if (!CreatureType::REACH_VERSION){
+            newItem = "nothing";
+        }
         if ( newItem.compare("nothing") == 0 ) {
             // You got "nothing"
             ss << "You did not find any items.\n";
@@ -94,13 +103,13 @@ void runBattle(Trainer &player1, Party &party, Item &items, stringstream& ss,
             items.addItem(newItem);
         }
         
-        // Leveling
-        bool levelUp = party.getActiveCreature().updateXP();
-        if(levelUp){
-            int health = party.getActiveCreature().getHealthCurr();
-            ss << party.getActiveCreature().getTypeName() << " grows to level "
-            << party.getActiveCreature().getLevel() << " and regains full "
-            << health << "/" << health << " health!!!\n\n";
+        if (CreatureType::REACH_VERSION){
+            // Leveling
+            bool levelUp = party.getActiveCreature().updateXP();
+            if (levelUp){
+                ss << party.getActiveCreature().getTypeName() << " grows to level "
+                    << party.getActiveCreature().getLevel() << "!!!\n\n";
+            }
         }
         
         PrintHelper::printHR(ss);
@@ -146,7 +155,7 @@ void parseMove(string playerMove, Party &party, Item &items, Creature& enemy,
     switch (playerMove[0]){
         case 'a': { // Attack
             if (playerMove.length()>1) { // This is an AtkBst(ab)
-                                         // Tell the item function to manage this
+                // Tell the item function to manage this
                 items.useItem(playerMove, party, enemy, ss, illegalMoveCount);
                 break;
             }
@@ -158,7 +167,7 @@ void parseMove(string playerMove, Party &party, Item &items, Creature& enemy,
         }
             
         case 's': { // Swap for another party member
-                    // You cannot swap to a fainted party member
+            // You cannot swap to a fainted party member
             if (playerMove.length() < 2) {
                 PrintHelper::printError(ss);
                 illegalMoveCount++;
@@ -228,7 +237,7 @@ void parseMove(string playerMove, Party &party, Item &items, Creature& enemy,
 }
 
 void parseMovePostBattle(string playerMove, Party &party, Item &items, Creature& enemy,
-                         stringstream& ss, int& illegalMoveCount){
+               stringstream& ss, int& illegalMoveCount){
     
     ss.str("");
     ss << "\n\n";
@@ -315,6 +324,8 @@ void parseMovePostBattle(string playerMove, Party &party, Item &items, Creature&
             break;
         }
     }
+    
+    // party.decreaseBoostTurns();
     
 }
 
