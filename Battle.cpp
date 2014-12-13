@@ -21,7 +21,7 @@ void runBattle(Trainer &player1, Party &party, Item &items, stringstream& ss,
                int winCount, int& moveCount, int& illegalMoveCount){
     
 
-    // WHAT SHOULD THE ENEMIES BE?? This generates an enemy
+    // generate enemy
     int tNum = EECSRandom::range(0,CreatureType::NUM_TYPES);
 
     Creature enemy;
@@ -88,10 +88,6 @@ void runBattle(Trainer &player1, Party &party, Item &items, stringstream& ss,
         //If you defeat an enemy, you regenerate some health and pick up an item
         ss << "\nYou have defeated the Enemy ";
         ss << enemy.getTypeName(0) << "! Congratulations!\n";
-        
-        //            ss << "Your party also gets to rest a turn and regains some health.\n\n";
-        //            party.getActiveCreature().rest();
-        //            party.restInactive();
         
         string newItem = Item::randomItem();
         if (!CreatureType::REACH_VERSION){
@@ -325,10 +321,7 @@ void parseMovePostBattle(string playerMove, Party &party, Item &items, Creature&
             items.useItem(playerMove, party, enemy, ss, illegalMoveCount);
             break;
         }
-    }
-    
-    // party.decreaseBoostTurns();
-    
+    }    
 }
 
 
