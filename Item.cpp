@@ -61,11 +61,6 @@ string Item::randomItem(){
     
     return "nothing";
 }
-    
-//returning temp for compilation
-string Item::getItemName(int pad){
-    return "temp";
-}
 
 int Item::getItemCount(int index) const {
     if (index < 0 || index > NUM_ITEMS) {
