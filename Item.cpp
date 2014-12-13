@@ -14,13 +14,6 @@
 #include <sstream>
 using namespace std;
 
-//const string Item::ITEM_NAMES[] = {"NOTHING", "POTION", "SHIELD", "DMG-BOOST",
-//    "REVIVE", "LASSO", "SCROLL-A","SCROLL-B","SCROLL-C","SCROLL-D","SCROLL-E",
-//    "SCROLL-F","SCROLL-G", "SCROLL-H" };
-//
-//const string Item::ITEM_CODES[] = {"NOTHING", "POTION", "SHIELD", "DMG-BOOST",
-//    "REVIVE", "LASSO", "S-A","S-B","S-C","S-D","S-E",
-//    "S-F","S-G", "S-H" };
 
 const string Item::ITEM_NAMES[] = { "Potion", "DefBst", "AtkBst", "Revive",
     "Collar", "Air Scroll", "Bombast Scroll", "Cool Scroll", "Dark Scroll",
@@ -82,17 +75,11 @@ int* Item::getItemArray(){
     return itemCounts;
 }
 
-//Not sure how we should do this
-//We might need to pass in the attacker and defender creatures
-//And since we want the boosts to be temporary, we won't want to modify 
-//the actual attack damage
-//Also need to write a printHelper for this
 
 //in battle, have int attackBoost = 4, decrement it each time a turn passes
 string Item::useItem(string itemCommand, Party& party, Creature& enemy,
-               stringstream & ss, int& illegal) {
-//string Item::useItem(int itemIndex, int itemCounts[NUM_ITEMS], Creature& active,
-//    Creature& friendly, Creature& enemy, stringstream & ss, int& illegalMoves){
+                     stringstream & ss, int& illegal) {
+
     int badMove = 0;
     
     // Parse info from the itemCommand
@@ -116,7 +103,7 @@ string Item::useItem(string itemCommand, Party& party, Creature& enemy,
     
     if (itemNum != -1 && itemCounts[itemNum] == 0) {
         ss << "Illegal Move: You tried to use " << Item::ITEM_NAMES[itemNum]
-            << ", but you don't have any.\n";
+        << ", but you don't have any.\n";
         badMove = -1;
         useItem = false;
     } else {
@@ -129,13 +116,19 @@ string Item::useItem(string itemCommand, Party& party, Creature& enemy,
             }
                 
             case 0: { // Potion(po)
-                // Raise the health of the current Creature by POTION_HEALTH
+                      // Raise the health of the current Creature by POTION_HEALTH
                 int h = party.getActiveCreature().getHealthCurr();
+                if (h == 0) {
+                    ss << "Illegal Move: You cannot use a Potion on a fainted creature.\n";
+                    badMove = -1;
+                    useItem = false;
+                    break;
+                }
                 h += Item::POTION_HEALTH;
                 party.getActiveCreature().setHealthCurr(h);
                 ss << "You used a Potion to raise your active "
-                    << party.getActiveCreature().getTypeName()
-                    << "'s health" << " by " << Item::POTION_HEALTH << ".\n";
+                << party.getActiveCreature().getTypeName()
+                << "'s health" << " by " << Item::POTION_HEALTH << ".\n";
                 break;
             }
                 
@@ -155,7 +148,7 @@ string Item::useItem(string itemCommand, Party& party, Creature& enemy,
                 
             case 3: { // Revive(re#)
                 if (itemCommand.length() < 3) {
-                    badMove = true;
+                    badMove = 1;
                     useItem = false;
                     break;
                 }
@@ -170,30 +163,30 @@ string Item::useItem(string itemCommand, Party& party, Creature& enemy,
                 if (cr.getHealthCurr() > 0) {
                     badMove = -1;
                     ss << "Illegal Move: You tried to Revive " << cr.getTypeName()
-                        << " in slot " << (cNum+1) << ", but it is not fainted.\n";
+                    << " in slot " << (cNum+1) << ", but it is not fainted.\n";
                     useItem = false;
                     break;
                 }
                 cr.setHealthCurr(Item::REVIVE_HEALTH);
                 ss << "You revived " << cr.getTypeName()
-                    << " in slot " << (cNum+1) << "!\n";
+                << " in slot " << (cNum+1) << "!\n";
                 break;
             }
                 
             case 4: { // Collar(co)
-                // This will only work if the enemy Creature has fainted, which
-                //   means you can only do it on the turn between enemies.
+                      // This will only work if the enemy Creature has fainted, which
+                      //   means you can only do it on the turn between enemies.
                 if (enemy.getHealthCurr() > 0) {
                     badMove = -1;
                     ss << "Illegal Move: You tried to Collar " << enemy.getTypeName()
-                        << ", but it is not fainted.\n";
+                    << ", but it is not fainted.\n";
                     useItem = false;
                     break;
                 }
                 if (itemCommand.length() < 3) {
                     badMove = -1;
                     ss << "Illegal Move: You tried to Collar " << enemy.getTypeName()
-                        << ", but did not specify a party member to replace.\n";
+                    << ", but did not specify a party member to replace.\n";
                     useItem = false;
                     break;
                 }
@@ -201,20 +194,20 @@ string Item::useItem(string itemCommand, Party& party, Creature& enemy,
                 if (cNum > 3 || cNum < 0) {
                     badMove = -1;
                     ss << "Illegal Move: You tried to Collar " << enemy.getTypeName()
-                        << ", but did not specify a valid member to replace.\n";
+                    << ", but did not specify a valid member to replace.\n";
                     useItem = false;
                     break;
                 }
                 // This is a valid swap, so make it so #1!
                 string oldName = party.creatures[cNum].getTypeName();
                 string newName = enemy.getTypeName();
-                enemy.setHealthCurr(Item::REVIVE_HEALTH);
+                enemy.setHealthCurr(Item::COLLAR_HEALTH);
                 party.creatures[cNum] = enemy;
                 
                 ss << "You used Collar to swap enemy " << newName
-                    << " for your " << oldName << " in slot " << (cNum+1) << ".\n";
-                ss << "Your new " << newName << " has " << Item::REVIVE_HEALTH
-                    << " health.\n";
+                << " for your " << oldName << " in slot " << (cNum+1) << ".\n";
+                ss << "Your new " << newName << " has " << Item::COLLAR_HEALTH
+                << " health.\n";
                 break;
             }
                 
@@ -241,15 +234,12 @@ string Item::useItem(string itemCommand, Party& party, Creature& enemy,
         
         if (badMove == 1) {
             illegal++;
-//            ss << "Illegal move: '" << itemCommand << "' is not a valid!";
             ss << "ERROR: INVALID MOVE" << endl;
             ss << "You lost your turn." << endl;
         } else if (badMove == -1) {
             illegal++;
         }
     }
-    
-    
     
     return "temp";
 }
@@ -258,20 +248,18 @@ string Item::useItem(string itemCommand, Party& party, Creature& enemy,
 //This is basically Battle::creatureAttack
 bool Item::scrollDmg(int scrollElt, int dmg, Creature& defender, stringstream& ss) {
     string dName;
-
+    
     dName = "Enemy " + defender.getTypeName(0);
-
-    //change to "Your scroll does x damage to Enemy creatureType"???
-   
+        
     int damageDone = defender.damage(dmg, scrollElt);
     ss << "You use " << CreatureType::elementName(scrollElt, 0)
-        << " Scroll, which does " << damageDone << " damage "
-        << "to " << dName << ".\n";
-
+    << " Scroll, which does " << damageDone << " damage "
+    << "to " << dName << ".\n";
+    
     if (defender.getHealthCurr() == 0) {
         ss << dName << " faints!\n";
     }
-
+    
     return true;
 }
 
